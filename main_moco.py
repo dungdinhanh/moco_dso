@@ -78,6 +78,7 @@ parser.add_argument('--multiprocessing-distributed', action='store_true',
                          'N processes per node, which has N GPUs. This is the '
                          'fastest way to use PyTorch for either single node or '
                          'multi node data parallel training')
+parser.add_argument('--save-folder', default="output", type=str, help='store output')
 
 # moco specific configs:
 parser.add_argument('--moco-dim', default=128, type=int,
@@ -96,6 +97,7 @@ parser.add_argument('--aug-plus', action='store_true',
                     help='use moco v2 data augmentation')
 parser.add_argument('--cos', action='store_true',
                     help='use cosine lr schedule')
+
 
 
 def main():
@@ -135,6 +137,11 @@ def main():
 
 def main_worker(gpu, ngpus_per_node, args):
     args.gpu = gpu
+    save_folder = args.save_folder
+    save_ckpt_folder = os.path.join(save_folder, "checkpoints")
+    log_file = os.path.join(save_folder, "output.txt")
+    log_buffer = open(log_file, "w")
+    os.makedirs(save_ckpt_folder)
 
     # suppress printing if not master
     if args.multiprocessing_distributed and args.gpu != 0:
@@ -263,7 +270,7 @@ def main_worker(gpu, ngpus_per_node, args):
         adjust_learning_rate(optimizer, epoch, args)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, args)
+        train(train_loader, model, criterion, optimizer, epoch, args, log_buffer)
 
         if not args.multiprocessing_distributed or (args.multiprocessing_distributed
                 and args.rank % ngpus_per_node == 0):
@@ -272,10 +279,11 @@ def main_worker(gpu, ngpus_per_node, args):
                 'arch': args.arch,
                 'state_dict': model.state_dict(),
                 'optimizer' : optimizer.state_dict(),
-            }, is_best=False, filename='checkpoint_{:04d}.pth.tar'.format(epoch))
+            }, is_best=False, folder=save_ckpt_folder)
+    log_buffer.close()
 
 
-def train(train_loader, model, criterion, optimizer, epoch, args):
+def train(train_loader, model, criterion, optimizer, epoch, args, log_buffer):
     batch_time = AverageMeter('Time', ':6.3f')
     data_time = AverageMeter('Data', ':6.3f')
     losses = AverageMeter('Loss', ':.4e')
@@ -319,13 +327,15 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         end = time.time()
 
         if i % args.print_freq == 0:
-            progress.display(i)
+            log_buffer.write(progress.display(i))
+            log_buffer.write("\n")
 
 
-def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
+def save_checkpoint(state, is_best, epoch, folder):
+    filename = os.path.join(folder, 'checkpoint_{:04d}.pth.tar'.format(epoch))
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, 'model_best.pth.tar')
+        shutil.copyfile(filename, os.path.join(folder, 'model_best.pth.tar'))
 
 
 class AverageMeter(object):
@@ -361,7 +371,9 @@ class ProgressMeter(object):
     def display(self, batch):
         entries = [self.prefix + self.batch_fmtstr.format(batch)]
         entries += [str(meter) for meter in self.meters]
-        print('\t'.join(entries))
+        string_out = '\t'.join(entries)
+        print(string_out)
+        return string_out
 
     def _get_batch_fmtstr(self, num_batches):
         num_digits = len(str(num_batches // 1))
