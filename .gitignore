@@ -3,3 +3,6 @@ data/
 checkpoints/
 output/
 *.log
+*/__pycache__/
+__pycache__/
+core.*
