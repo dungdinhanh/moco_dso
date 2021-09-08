@@ -1,7 +1,7 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=8:ngpus=4
+#PBS -l select=1:ncpus=8:ngpus=2
 #PBS -l pmem=120GB
-#PBS -N prems9_tune
+#PBS -N r50imgnet
 #PBS -j oe
 #PBS -o runskd/output_off6.log
 #PBS -q research
@@ -15,7 +15,7 @@ echo ${PBS_O_WORKDIR}
 
 
 
-USER=anhdung_dinh # Replace with your own HPC account name
+USER=thibaongoc_nguyen # Replace with your own HPC account name
 #/home/users/$USER/.conda/envs/yolodso/bin/pip config set global.target /home/users/$USER/.conda/envs/yolodso/bin/
 #export PATH=/home/users/$USER/.conda/envs/yolodso/bin/:$PATH
 #export PYTHONPATH=/home/users/$USER/.conda/envs/yolodso/lib/python3.8/site-packages/:$PYTHONPATH
@@ -23,12 +23,12 @@ python_alias="/home/users/${USER}/.conda/envs/yolodso/bin/python3.8"
 nvidia-smi
 
 cmd="${python_alias} main_moco.py \
-  -a resnet18 \
+  -a resnet50 \
   --lr 0.03 \
   --batch-size 256 \
   --dist-url 'tcp://localhost:10001' --multiprocessing-distributed --world-size 1 \
-   --rank 0 --mlp --moco-t 0.2 --aug-plus --cos --save-folder output/resnet18imgnet \
-  ../imagenet/ "
+   --rank 0 --mlp --moco-t 0.2 --aug-plus --cos --save-folder output/resnet50voc \
+  ../VOC/ "
 
 echo ${cmd}
 eval ${cmd}
