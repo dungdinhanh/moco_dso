@@ -139,9 +139,10 @@ def main_worker(gpu, ngpus_per_node, args):
     args.gpu = gpu
     save_folder = args.save_folder
     save_ckpt_folder = os.path.join(save_folder, "checkpoints")
+    os.makedirs(save_ckpt_folder, exist_ok=True)
     log_file = os.path.join(save_folder, "output.txt")
     log_buffer = open(log_file, "w")
-    os.makedirs(save_ckpt_folder)
+
 
     # suppress printing if not master
     if args.multiprocessing_distributed and args.gpu != 0:

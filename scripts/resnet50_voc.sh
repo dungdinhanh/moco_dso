@@ -3,7 +3,7 @@
 #PBS -l pmem=120GB
 #PBS -N r50imgnet
 #PBS -j oe
-#PBS -o runskd/output_off6.log
+#PBS -o output_r50voc.log
 #PBS -q research
 #PBS -v CONTAINER_IMAGE=nvcr.io/nvidia/pytorch:20.06-py3
 
