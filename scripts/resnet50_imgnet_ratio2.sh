@@ -10,7 +10,7 @@ do
     --lr 0.03 \
     --batch-size 256 \
     --dist-url 'tcp://localhost:10001' --multiprocessing-distributed --world-size 2 \
-     --rank 0 --mlp --moco-t 0.2 --aug-plus --cos --save-folder output/resnet50imgnet${ratio}/ \
+     --rank 0 --mlp --moco-t 0.2 --aug-plus --cos --moco-k-ratio ${ratio} --save-folder output/resnet50imgnet${ratio}/ \
     data/imgnet_exp/imgnet${ratio}/ "
   echo ${cmd}
   eval ${cmd}

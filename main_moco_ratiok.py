@@ -164,10 +164,12 @@ def main_worker(gpu, ngpus_per_node, args):
                                 world_size=args.world_size, rank=args.rank)
     # create model
     print("=> creating model '{}'".format(args.arch))
+    k_num = int(args.moco_k_ratio * 65536)
+    k_num -= (k_num% args.batch_size)
     model = moco.builder.MoCo(
         models.__dict__[args.arch],
-        args.moco_dim, int(args.moco_k_ratio * 65536), args.moco_m, args.moco_t, args.mlp)
-    print("K = %d"%(int(args.moco_k_ratio * 65536)))
+        args.moco_dim, k_num, args.moco_m, args.moco_t, args.mlp)
+    print("K = %d"%(k_num))
 
     if args.distributed:
         # For multiprocessing distributed, DistributedDataParallel constructor
