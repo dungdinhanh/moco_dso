@@ -5,7 +5,7 @@ ratios=( "0.2")
 
 for ratio in "${ratios[@]}"
 do
-  cmd="$python main_moco_ratiok.py \
+  cmd="python main_moco_ratiok.py \
     -a resnet50 \
     --lr 0.03 \
     --batch-size 256 \
